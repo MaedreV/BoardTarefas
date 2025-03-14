@@ -32,6 +32,16 @@ public class CardDAO {
         return entity;
     }
 
+    public void moveToColumn(final Long columnId, final Long cardId) throws SQLException {
+        var sql = "UPDATE CARDS SET board_column_id = ? WHERE id = ?;";
+        try (var statement = connection.prepareStatement(sql)) {
+            var i = 1;
+            statement.setLong(i++, columnId);
+            statement.setLong(i, cardId);
+            statement.executeUpdate();
+        }
+    }
+
     public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
         var sql
                 = """
@@ -50,7 +60,7 @@ public class CardDAO {
                     ON c.id = b.card_id
                    AND b.unblocked_at IS NULL
                  INNER JOIN BOARDS_COLUMNS bc
-                     ON bc.id = c.board_column_id
+                    ON bc.id = c.board_column_id
                   WHERE c.id = ?;
                 """;
         try (var statement = connection.prepareStatement(sql)) {

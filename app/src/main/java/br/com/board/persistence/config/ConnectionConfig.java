@@ -13,7 +13,7 @@ public final class ConnectionConfig {
     public static Connection getConnection() throws SQLException {
         var url = "jdbc:mysql://localhost/board_dio";
         var user = "root";
-        var password = "board";
+        var password = "root";
         var connection = DriverManager.getConnection(url, user, password);
         connection.setAutoCommit(false);
         return connection;

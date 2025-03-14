@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Locale;
 
 import static br.com.board.persistence.config.ConnectionConfig.getConnection;
 import br.com.board.persistence.entity.BoardColumnEntity;
@@ -18,7 +19,7 @@ import br.com.board.service.BoardService;
 
 public class MainMenu {
 
-    private final Scanner scanner = new Scanner(System.in).useDelimiter("\n");
+    private final Scanner scanner = new Scanner(System.in).useDelimiter("\n").useLocale(Locale.US);
 
     public void execute() throws SQLException {
         System.out.println("Bem vindo ao gerenciador de boards, escolha a opção desejada");
@@ -28,7 +29,16 @@ public class MainMenu {
             System.out.println("2 - Selecionar um board existente");
             System.out.println("3 - Excluir um board");
             System.out.println("4 - Sair");
-            option = scanner.nextInt();
+
+            String token = scanner.next();
+            System.out.println("Token lido: '" + token + "'");
+            try {
+                option = Integer.parseInt(token.trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Por favor, insira um número.");
+                continue;
+            }
+
             switch (option) {
                 case 1 ->
                     createBoard();
@@ -50,7 +60,13 @@ public class MainMenu {
         entity.setName(scanner.next());
 
         System.out.println("Seu board terá colunas além das 3 padrões? Se sim informe quantas, senão digite '0'");
-        var additionalColumns = scanner.nextInt();
+        int additionalColumns;
+        try {
+            additionalColumns = Integer.parseInt(scanner.next().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida para o número de colunas adicionais. Utilizando 0 por padrão.");
+            additionalColumns = 0;
+        }
 
         List<BoardColumnEntity> columns = new ArrayList<>();
 
@@ -81,12 +97,17 @@ public class MainMenu {
             var service = new BoardService(connection);
             service.insert(entity);
         }
-
     }
 
     private void selectBoard() throws SQLException {
         System.out.println("Informe o id do board que deseja selecionar");
-        var id = scanner.nextLong();
+        long id;
+        try {
+            id = Long.parseLong(scanner.next().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida para o id. Retornando ao menu.");
+            return;
+        }
         try (var connection = getConnection()) {
             var queryService = new BoardQueryService(connection);
             var optional = queryService.findById(id);
@@ -99,7 +120,13 @@ public class MainMenu {
 
     private void deleteBoard() throws SQLException {
         System.out.println("Informe o id do board que será excluido");
-        var id = scanner.nextLong();
+        long id;
+        try {
+            id = Long.parseLong(scanner.next().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida para o id. Retornando ao menu.");
+            return;
+        }
         try (var connection = getConnection()) {
             var service = new BoardService(connection);
             if (service.delete(id)) {
@@ -117,5 +144,4 @@ public class MainMenu {
         boardColumn.setOrder(order);
         return boardColumn;
     }
-
 }
